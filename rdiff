@@ -1,0 +1,41 @@
+function rdiff() {
+    arg1=$1
+    arg2=$2
+
+    args1=(${(@s/:/)arg1})
+    args2=(${(@s/:/)arg2})
+
+    if [ ${#args1[@]} -eq 2 ] && [ ${#args2[@]} -eq 2 ]; then
+        #Remote
+        fd_check=`ssh $args1[1] "file $args1[2]"`
+        if [[ $fd_check == *"directory"* ]]; then
+            diff <(ssh $args1[1] ls -R $args1[2]) <(ssh $args2[1] ls -R $args2[2])
+        else
+            diff <(ssh $args1[1] cat $args1[2]) <(ssh $args2[1] cat $args2[2])
+        fi
+
+    elif [ ${#args1[@]} -eq 2 ]; then
+        # arg1 is remote
+        if [ -d $arg2 ]; then
+            diff <(ssh $args1[1] ls -R $args1[2]) <(ls -R $arg2)
+        else
+            diff <(ssh $args1[1] cat $args1[2]) $arg2
+        fi
+
+    elif [ ${#args2[@]} -eq 2 ]; then
+        # arg2 is remote
+        if [ -d $arg1 ]; then
+            diff <(ls -R $arg1) <(ssh $args2[1] ls -R $args2[2])
+        else
+            diff $arg1 diff <(ssh $args2[1] cat $args2[2])
+        fi
+
+    else
+        #Local
+        if [ -d $arg1 ]; then
+            diff -r $arg1 $arg2
+        else
+            diff $arg1 $arg2
+        fi
+    fi
+}
