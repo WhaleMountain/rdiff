@@ -27,7 +27,7 @@ function rdiff() {
         if [ -d $arg1 ]; then
             diff <(ls -R $arg1) <(ssh $args2[1] ls -R $args2[2])
         else
-            diff $arg1 diff <(ssh $args2[1] cat $args2[2])
+            diff $arg1 <(ssh $args2[1] cat $args2[2])
         fi
 
     else
